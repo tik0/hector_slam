@@ -4,7 +4,7 @@ project(hector_geotiff)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS hector_map_tools hector_nav_msgs nav_msgs pluginlib roscpp std_msgs)
+find_package(catkin REQUIRED COMPONENTS hector_map_tools hector_nav_msgs nav_msgs pluginlib roscpp std_msgs nav_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -68,7 +68,7 @@ include(${QT_USE_FILE})
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES geotiff_writer
-  CATKIN_DEPENDS hector_map_tools hector_nav_msgs nav_msgs pluginlib roscpp std_msgs
+  CATKIN_DEPENDS hector_map_tools hector_nav_msgs nav_msgs pluginlib roscpp std_msgs nav_msgs
   DEPENDS EIGEN3 QT
 )
 

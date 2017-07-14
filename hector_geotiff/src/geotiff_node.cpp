@@ -28,15 +28,17 @@
 
 #include <cstdio>
 #include <ros/ros.h>
+#include <ros/topic.h>
 #include <ros/console.h>
 #include <pluginlib/class_loader.h>
 
 #include <boost/algorithm/string.hpp>
-
+#include <boost/shared_ptr.hpp>
 
 #include "nav_msgs/GetMap.h"
 #include "std_msgs/String.h"
 #include "geometry_msgs/Quaternion.h"
+#include "nav_msgs/OccupancyGrid.h"
 
 #include <Eigen/Geometry>
 
@@ -77,6 +79,7 @@ public:
     sys_cmd_sub_ = n_.subscribe("syscommand", 1, &MapGenerator::sysCmdCallback, this);
 
     map_service_client_ = n_.serviceClient<nav_msgs::GetMap>("map");
+
     //object_service_client_ = n_.serviceClient<worldmodel_msgs::GetObjectModel>("worldmodel/get_object_model");
     path_service_client_ = n_.serviceClient<hector_nav_msgs::GetRobotTrajectory>("trajectory");
 
@@ -133,10 +136,21 @@ public:
     std::stringstream ssStream;
 
     nav_msgs::GetMap srv_map;
-    if (map_service_client_.call(srv_map))
-    {
+    boost::shared_ptr<const nav_msgs::OccupancyGrid> map_;
+    try {
+        map_ = ros::topic::waitForMessage<nav_msgs::OccupancyGrid>(std::string("/map"), ros::Duration(10));
+    } catch(const std::exception &exc) {
+        const std::string excStr(exc.what());
+        ROS_WARN("%s\n", excStr.c_str());
+        return;
+    }
+  if(!map_) {
+        ROS_ERROR("map is empty\n");
+        return;
+  } else {
       ROS_INFO("GeotiffNode: Map service called successfully");
-      const nav_msgs::OccupancyGrid& map (srv_map.response.map);
+//      const nav_msgs::OccupancyGrid& map (srv_map.response.map);
+      const nav_msgs::OccupancyGrid& map (*map_);
 
       std::string map_file_name = p_map_file_base_name_;
       std::string competition_name;
@@ -167,11 +181,6 @@ public:
       geotiff_writer_.drawCoords();
 
       //ROS_INFO("Sum: %ld", (long int)srv.response.sum);
-    }
-    else
-    {
-      ROS_ERROR("Failed to call map service");
-      return;
     }
 
     for (size_t i = 0; i < plugin_vector_.size(); ++i){
@@ -276,7 +285,8 @@ public:
 
   GeotiffWriter geotiff_writer_;
 
-  ros::ServiceClient map_service_client_;// = n.serviceClient<beginner_tutorials::AddTwoInts>("add_two_ints");
+  ros::ServiceClient map_service_client_;
+  ros::Subscriber map_subscriber_;
   ros::ServiceClient object_service_client_;
   ros::ServiceClient path_service_client_;
 

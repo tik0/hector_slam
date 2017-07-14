@@ -1,9 +1,13 @@
 <?xml version="1.0"?>
 
 <launch>
+  <arg name="map_file_path" default="$(find hector_geotiff)/maps"/>
+  <arg name="map_file_base_name" default="hector_slam_map"/>
 
   <node pkg="hector_geotiff" type="geotiff_node" name="hector_geotiff_node" output="screen" launch-prefix="nice -n 15">
-    <remap from="map" to="scanmatcher_map" />
+    <remap from="map" to="map" />
+    <param name="map_file_path" type="string" value="$(arg map_file_path)" />
+    <param name="map_file_base_name" type="string" value="$(arg map_file_base_name)" />
     <param name="map_file_path" type="string" value="$(find hector_geotiff)/maps" />
     <param name="map_file_base_name" type="string" value="" />
     <param name="geotiff_save_period" type="double" value="45" />
